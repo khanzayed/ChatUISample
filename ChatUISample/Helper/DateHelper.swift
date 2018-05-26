@@ -22,7 +22,8 @@ class DateHelper {
     }
     
     internal func getDateHeader(fromDate:Date) -> String? {
-        dateFormatter.dateFormat = "dd-MM-yyyy"
+//        dateFormatter.dateFormat = "dd-MM-yyyy"
+        dateFormatter.dateFormat = "HH:mm"
         
         return dateFormatter.string(from: fromDate)
     }

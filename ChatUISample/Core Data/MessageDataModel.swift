@@ -38,6 +38,7 @@ class MessageDataModel {
         self.isOutgoing = isOutgoing
         self.dateTime = Date()
         self.messageDateStr = DateHelper.shared.getMessageDate(fromDate: self.dateTime)
+        self.headerDateStr = DateHelper.shared.getDateHeader(fromDate: self.dateTime)!
     }
     
     init(image:UIImage, dimension:CGFloat, isSpacingRequired:Bool, isOutgoing:Bool) {
@@ -50,6 +51,7 @@ class MessageDataModel {
         self.isOutgoing = isOutgoing
         self.dateTime = Date()
         self.messageDateStr = DateHelper.shared.getMessageDate(fromDate: self.dateTime)
+        self.headerDateStr = DateHelper.shared.getDateHeader(fromDate: self.dateTime)!
     }
     
     init(isSpacingRequired:Bool) {

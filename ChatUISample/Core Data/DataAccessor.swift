@@ -46,18 +46,22 @@ class DatabaseAccessor {
         }
     }
     
-    func fetchAllMessages() -> [MessageDataModel]? {
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Message")
+    func fetchAllMessages() -> NSFetchedResultsController<Message>? {
+        let fetchRequest = NSFetchRequest<Message>(entityName: "Message")
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "dateTime", ascending: true)]
+        
+        let controller = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: managedObjectContext, sectionNameKeyPath: "headerDateStr", cacheName: nil)
         do {
-            if let results = try managedObjectContext.fetch(fetchRequest) as? [Message], results.count > 0 {
-                var messageArray = [MessageDataModel]()
-                for msg in results {
-                    messageArray.append(MessageDataModel(database: msg))
-                }
-                
-                return messageArray
-            }
+            try controller.performFetch()
+            return controller
+//            if let results = try managedObjectContext.fetch(fetchRequest) as? [Message], results.count > 0 {
+//                var messageArray = [MessageDataModel]()
+//                for msg in results {
+//                    messageArray.append(MessageDataModel(database: msg))
+//                }
+//
+//                return messageArray
+//            }
         } catch {
             print ("There was an error")
         }
