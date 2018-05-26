@@ -60,4 +60,15 @@ class DatabaseAccessor {
         return nil
     }
     
+    internal func deleteAllMessages() {
+        let fetch = NSFetchRequest<NSFetchRequestResult>(entityName: "Message")
+        let request = NSBatchDeleteRequest(fetchRequest: fetch)
+        
+        do {
+            try managedObjectContext.execute(request)
+        } catch _ {
+            
+        }
+    }
+    
 }

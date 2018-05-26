@@ -22,8 +22,7 @@ class DateHelper {
     }
     
     internal func getDateHeader(fromDate:Date) -> String? {
-//        dateFormatter.dateFormat = "dd-MM-yyyy"
-        dateFormatter.dateFormat = "HH:mm"
+        dateFormatter.dateFormat = "dd-MM-yyyy"
         
         return dateFormatter.string(from: fromDate)
     }
@@ -34,12 +33,15 @@ class DateHelper {
         return dateFormatter.string(from: fromDate)
     }
     
-    internal func getTodayOrYesterday(fromDate:Date) -> String? {
+    internal func getTodayOrYesterday(fromString:String) -> String? {
+        dateFormatter.dateFormat = "dd-MM-yyyy"
+        dateFormatter.timeZone = .current
+        let date = dateFormatter.date(from: fromString)!
         let calendar = NSCalendar.current
         
-        if calendar.isDateInToday(fromDate) {
+        if calendar.isDateInToday(date) {
             return "Today"
-        } else if calendar.isDateInYesterday(fromDate) {
+        } else if calendar.isDateInYesterday(date) {
             return "Yesterday"
         }
         

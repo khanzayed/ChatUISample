@@ -18,6 +18,7 @@ class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
     @IBOutlet weak var btnSend: UIButton!
     @IBOutlet weak var segmentControl: UISegmentedControl!
     @IBOutlet weak var textViewBottomConstraint: NSLayoutConstraint!
+    @IBOutlet weak var viewBlankTableHeader: UIView!
     
     private var message = [MessageDataModel]()
     private let maxWidth = UIScreen.main.bounds.width * 0.75
@@ -43,7 +44,8 @@ class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
         let fetchRequest = NSFetchRequest<Message>(entityName: "Message")
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "dateTime", ascending: true)]
         
-        let frc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: managedObjectContext, sectionNameKeyPath: nil, cacheName: nil)
+        
+        let frc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: managedObjectContext, sectionNameKeyPath: "headerDateStr", cacheName: nil)
         frc.delegate = self
         return frc
     }()
@@ -58,17 +60,25 @@ class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
         NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardDidHide(notification:)), name: .UIKeyboardWillHide, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardDidShow(notification:)), name: .UIKeyboardWillShow, object: nil)
         
+        viewBlankTableHeader.layer.cornerRadius = 4.0
+        viewBlankTableHeader.layer.borderColor = UIColor(rgba: "#CFCFCF").cgColor
+        viewBlankTableHeader.layer.borderWidth = 0.5
+        
         do {
             try controller.performFetch()
             
             if controller.sections!.count > 0 {
+                viewBlankTableHeader.isHidden = true
                 DispatchQueue.main.async {
                     let lastSection = self.controller.sections!.count - 1
                     let lastRow = self.controller.sections![lastSection].numberOfObjects - 1
-                    self.tableView.scrollToRow(at: IndexPath(item: lastRow, section: lastSection), at: .bottom, animated: false)
+                    if lastRow >= 0 {
+                        self.tableView.scrollToRow(at: IndexPath(item: lastRow, section: lastSection), at: .bottom, animated: false)
+                    }
                 }
+            } else {
+                viewBlankTableHeader.isHidden = false
             }
-            
         } catch {
             
         }
@@ -121,6 +131,46 @@ class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
         }
     }
     
+    private func reloadHeaders() {
+        for section in 0..<self.tableView.numberOfSections {
+            if let headerView = self.tableView.headerView(forSection: section) {
+                configureHeaderView(headerView: headerView, section: section)
+            }
+        }
+    }
+    
+    fileprivate func configureHeaderView(headerView:UIView, section:Int) {
+        _ = headerView.subviews.compactMap{$0.removeFromSuperview()}
+        
+        let lbl = UILabel(frame: CGRect(x: 10, y: 0, width: 80, height: 20))
+        lbl.numberOfLines = 0
+        lbl.font = UIFont.systemFont(ofSize: 11, weight: UIFont.Weight.medium)
+        
+        let headerText = controller.sections![section].name
+        if headerText.count > 0 {
+            if let value = DateHelper.shared.getTodayOrYesterday(fromString: headerText) {
+                lbl.text = value
+            } else {
+                lbl.text = headerText
+            }
+        } else if headerText.count == 0, controller.sections?.count == 1 {
+            lbl.text = "Today"
+        }
+        lbl.textColor = UIColor.darkGray
+        lbl.textAlignment = .center
+        
+        let x:CGFloat = (UIScreen.main.bounds.width / 2) - 50
+        let textView = UIView(frame: CGRect(x: x, y: 0, width: 100, height: 20))
+        textView.layer.cornerRadius = 4.0
+        textView.backgroundColor = UIColor(rgba: "#DBF0F9")
+        textView.layer.borderWidth = 0.5
+        textView.layer.borderColor = UIColor(rgba: "#CFCFCF").cgColor
+        
+        textView.addSubview(lbl)
+        
+        headerView.addSubview(textView)
+    }
+    
     @IBAction func segmentControlTapped(_ sender: UISegmentedControl) {
         isOutgoing = !isOutgoing
         isSpacingRequired = true
@@ -168,12 +218,35 @@ class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
         self.present(alert, animated: true, completion: nil)
     }
     
+    @IBAction func clearButtonTapped(_ sender: UIButton) {
+        self.view.endEditing(true)
+        if controller.sections!.count > 0 {
+            controller.delegate = nil
+            dbAccessor.deleteAllMessages()
+            do {
+                try controller.performFetch()
+                viewBlankTableHeader.isHidden = false
+                tableView.reloadData()
+            } catch _ {
+                
+            }
+            controller.delegate = self
+        }
+        
+    }
+    
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         switch type {
         case .insert:
             if let index = newIndexPath {
                 DispatchQueue.main.async {
-                    self.tableView.insertRows(at: [index], with: .bottom)
+                    self.viewBlankTableHeader.isHidden = true
+                    if self.tableView.numberOfSections > index.section {
+                        self.tableView.insertRows(at: [index], with: .bottom)
+                    } else {
+                        self.tableView.insertSections([index.section], with: .bottom)
+                        self.reloadHeaders()
+                    }
                     self.tableView.scrollToRow(at: index, at: .bottom, animated: true)
                     
                     self.updateVisibleIndexesByOne()
@@ -197,12 +270,8 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         let msg = MessageDataModel(database: controller.object(at: indexPath))
-        if msg.getMessageType() == .DateHeader {
-            return 20
-        } else {
-            let value:CGFloat = (msg.getIsSpacingRequired()) ? 34 : 29
-            return msg.getCGFloatHeight() + value
-        }
+        let value:CGFloat = (msg.getIsSpacingRequired()) ? 34 : 29
+        return msg.getCGFloatHeight() + value
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
@@ -210,24 +279,8 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let lbl = UILabel(frame: CGRect(x: 10, y: 0, width: 80, height: 20))
-        lbl.numberOfLines = 0
-        lbl.font = UIFont.systemFont(ofSize: 11, weight: UIFont.Weight.medium)
-        lbl.text = controller.sections![section].name
-        lbl.textColor = UIColor.darkGray
-        lbl.textAlignment = .center
-        
-        let x:CGFloat = (UIScreen.main.bounds.width / 2) - 50
-        let textView = UIView(frame: CGRect(x: x, y: 0, width: 100, height: 20))
-        textView.layer.cornerRadius = 4.0
-        textView.backgroundColor = UIColor(rgba: "#DBF0F9")
-        textView.layer.borderWidth = 0.5
-        textView.layer.borderColor = UIColor(rgba: "#CFCFCF").cgColor
-        
-        textView.addSubview(lbl)
-        
         let headerView = UIView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 20))
-        headerView.addSubview(textView)
+        configureHeaderView(headerView: headerView, section: section)
         
         return headerView
     }
