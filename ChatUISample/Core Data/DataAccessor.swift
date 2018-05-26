@@ -31,6 +31,21 @@ class DatabaseAccessor {
         }
     }
     
+    func saveMessages(messages:[MessageDataModel]) {
+        var messageList = [Message]()
+        for messageDataModel in messages {
+            let message = NSEntityDescription.insertNewObject(forEntityName: "Message", into: managedObjectContext) as! Message
+            message.setupManagedObject(message: messageDataModel)
+            messageList.append(message)
+        }
+        
+        do {
+            try managedObjectContext.save()
+        } catch let error {
+            print(error.localizedDescription)
+        }
+    }
+    
     func fetchAllMessages() -> [MessageDataModel]? {
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Message")
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "dateTime", ascending: true)]
@@ -38,15 +53,9 @@ class DatabaseAccessor {
             if let results = try managedObjectContext.fetch(fetchRequest) as? [Message], results.count > 0 {
                 var messageArray = [MessageDataModel]()
                 for msg in results {
-                    switch msg.getMessageType() {
-                    case .Text:
-                        messageArray.append(MessageDataModel(text: msg.getText(), width: msg.getWidth(), height: msg.getHeight(), isSpacingRequired: msg.getIsSpacingRequired(), isOutgoing: msg.getIsOutgoing()))
-                    case .Image:
-                        if let image = msg.getImage() {
-                            messageArray.append(MessageDataModel(image: image, dimension: msg.getWidth(), isSpacingRequired: msg.getIsSpacingRequired(), isOutgoing: msg.getIsOutgoing()))
-                        }
-                    }
+                    messageArray.append(MessageDataModel(database: msg))
                 }
+                
                 return messageArray
             }
         } catch {

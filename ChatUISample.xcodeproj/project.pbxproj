@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		6F0823B914EC0AD9C8F08B7C /* Pods_ChatUISample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3526A1D687AA554E4F800078 /* Pods_ChatUISample.framework */; };
+		FE62BF9120B99A060069767A /* DateHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE62BF9020B99A060069767A /* DateHelper.swift */; };
+		FE62BF9320B9B4290069767A /* UIColorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE62BF9220B9B4290069767A /* UIColorExtension.swift */; };
 		FE9A119520AB4B80001E5666 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9A119420AB4B80001E5666 /* AppDelegate.swift */; };
 		FE9A119720AB4B80001E5666 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE9A119620AB4B80001E5666 /* ViewController.swift */; };
 		FE9A119A20AB4B80001E5666 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FE9A119820AB4B80001E5666 /* Main.storyboard */; };
@@ -24,6 +26,8 @@
 		003C80D7D36CF83E2BC86F64 /* Pods-ChatUISample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChatUISample.release.xcconfig"; path = "Pods/Target Support Files/Pods-ChatUISample/Pods-ChatUISample.release.xcconfig"; sourceTree = "<group>"; };
 		3526A1D687AA554E4F800078 /* Pods_ChatUISample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ChatUISample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		623DDA37FBBF010EDE773596 /* Pods-ChatUISample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChatUISample.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ChatUISample/Pods-ChatUISample.debug.xcconfig"; sourceTree = "<group>"; };
+		FE62BF9020B99A060069767A /* DateHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateHelper.swift; sourceTree = "<group>"; };
+		FE62BF9220B9B4290069767A /* UIColorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIColorExtension.swift; sourceTree = "<group>"; };
 		FE9A119120AB4B80001E5666 /* ChatUISample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChatUISample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FE9A119420AB4B80001E5666 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		FE9A119620AB4B80001E5666 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -67,6 +71,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		FE62BF8F20B999F50069767A /* Helper */ = {
+			isa = PBXGroup;
+			children = (
+				FE62BF9020B99A060069767A /* DateHelper.swift */,
+				FE62BF9220B9B4290069767A /* UIColorExtension.swift */,
+			);
+			path = Helper;
+			sourceTree = "<group>";
+		};
 		FE9A118820AB4B80001E5666 = {
 			isa = PBXGroup;
 			children = (
@@ -88,6 +101,7 @@
 		FE9A119320AB4B80001E5666 /* ChatUISample */ = {
 			isa = PBXGroup;
 			children = (
+				FE62BF8F20B999F50069767A /* Helper */,
 				FE9A11AD20ACC58A001E5666 /* Core Data */,
 				FE9A119420AB4B80001E5666 /* AppDelegate.swift */,
 				FE9A119620AB4B80001E5666 /* ViewController.swift */,
@@ -226,9 +240,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				FE9A119720AB4B80001E5666 /* ViewController.swift in Sources */,
+				FE62BF9120B99A060069767A /* DateHelper.swift in Sources */,
 				FE9A11AC20ACC52A001E5666 /* ChatUISample.xcdatamodeld in Sources */,
 				FE9A11B120ACC63B001E5666 /* DataAccessor.swift in Sources */,
 				FE9A11B320ACC84B001E5666 /* MessageDataModel.swift in Sources */,
+				FE62BF9320B9B4290069767A /* UIColorExtension.swift in Sources */,
 				FE9A11AF20ACC59A001E5666 /* Message.swift in Sources */,
 				FE9A119520AB4B80001E5666 /* AppDelegate.swift in Sources */,
 				FE9A11A720AB5160001E5666 /* MessageTableViewCell.swift in Sources */,
