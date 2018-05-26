@@ -25,8 +25,6 @@ class MessageTableViewCell: UITableViewCell {
                 setupTextViewCell()
             case .Image:
                 setupImageViewCell()
-            case .DateHeader:
-                setupDateHeaderCell()
             }
         }
     }
@@ -117,40 +115,4 @@ class MessageTableViewCell: UITableViewCell {
         self.addSubview(textView!)
     }
     
-    func setupDateHeaderCell() {
-        lbl?.removeFromSuperview()
-        dateLbl?.removeFromSuperview()
-        textView?.removeFromSuperview()
-        imgView?.removeFromSuperview()
-        
-        lbl = nil
-        dateLbl = nil
-        textView = nil
-        imgView = nil
-        
-        let textWidth = message.getCGFloatWidth()
-        let textHeight = message.getCGFloatHeight()
-        
-        lbl = UILabel(frame: CGRect(x: 2, y: 0, width: textWidth, height: textHeight))
-        lbl!.numberOfLines = 0
-        lbl!.font = UIFont.systemFont(ofSize: 11, weight: UIFont.Weight.medium)
-        if let text = DateHelper.shared.getTodayOrYesterday(fromDate: message.getDateTime()) {
-            lbl!.text = text
-        } else {
-            lbl!.text = message.getHeaderDateString()
-        }
-        lbl!.textColor = UIColor.darkGray
-        lbl!.textAlignment = .center
-        
-        textView = UIView(frame: CGRect(x: 0, y: 0, width: textWidth + 4, height: textHeight))
-        textView?.center.x = self.center.x
-        textView!.layer.cornerRadius = 4.0
-        textView!.backgroundColor = UIColor(rgba: "#DBF0F9")
-        textView!.layer.borderWidth = 0.5
-        textView!.layer.borderColor = UIColor(rgba: "#CFCFCF").cgColor
-        
-        textView!.addSubview(lbl!)
-        self.addSubview(textView!)
-    }
-
 }

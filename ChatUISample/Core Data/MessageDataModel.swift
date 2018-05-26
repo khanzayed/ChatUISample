@@ -12,7 +12,6 @@ import UIKit
 enum MessageType:Int {
     case Text = 0
     case Image
-    case DateHeader
 }
 
 class MessageDataModel {
@@ -52,18 +51,6 @@ class MessageDataModel {
         self.dateTime = Date()
         self.messageDateStr = DateHelper.shared.getMessageDate(fromDate: self.dateTime)
         self.headerDateStr = DateHelper.shared.getDateHeader(fromDate: self.dateTime)!
-    }
-    
-    init(isSpacingRequired:Bool) {
-        self.text = ""
-        self.isSpacingRequired = isSpacingRequired
-        self.type = .DateHeader
-        self.dateTime = Date()
-        self.headerDateStr = DateHelper.shared.getDateHeader(fromDate: dateTime)!
-        self.width = "88-Sept-8888".widthForSingleRow(font: UIFont.systemFont(ofSize: 12, weight: UIFont.Weight.regular))
-        self.height = 20
-        self.isOutgoing = false
-        self.messageDateStr = ""
     }
     
     init(database:Message) {
@@ -137,18 +124,6 @@ class MessageDataModel {
     
     internal func getTime() -> String {
         return messageDateStr
-    }
-    
-}
-
-extension MessageDataModel {
-    
-    internal func isLastMessageOfTheDay() -> Bool {
-        if Calendar.current.compare(self.getDateTime(), to: Date(), toGranularity: .minute) == .orderedAscending {
-            return true
-        } else {
-            return false
-        }
     }
     
 }

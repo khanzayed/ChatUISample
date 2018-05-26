@@ -54,14 +54,6 @@ class DatabaseAccessor {
         do {
             try controller.performFetch()
             return controller
-//            if let results = try managedObjectContext.fetch(fetchRequest) as? [Message], results.count > 0 {
-//                var messageArray = [MessageDataModel]()
-//                for msg in results {
-//                    messageArray.append(MessageDataModel(database: msg))
-//                }
-//
-//                return messageArray
-//            }
         } catch {
             print ("There was an error")
         }

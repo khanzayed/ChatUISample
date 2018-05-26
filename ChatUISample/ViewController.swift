@@ -11,7 +11,7 @@ import Foundation
 import AlamofireImage
 import CoreData
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
 
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var msgTextView: UITextField!
@@ -36,7 +36,17 @@ class ViewController: UIViewController {
     private let dbAccessor = DatabaseAccessor()
     var imagePicker = UIImagePickerController()
 
-    var controller:NSFetchedResultsController<Message>?
+    fileprivate lazy var controller : NSFetchedResultsController<Message> = {
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
+        let managedObjectContext = appDelegate.persistentContainer.viewContext
+        
+        let fetchRequest = NSFetchRequest<Message>(entityName: "Message")
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "dateTime", ascending: true)]
+        
+        let frc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: managedObjectContext, sectionNameKeyPath: nil, cacheName: nil)
+        frc.delegate = self
+        return frc
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -48,53 +58,21 @@ class ViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardDidHide(notification:)), name: .UIKeyboardWillHide, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.keyboardDidShow(notification:)), name: .UIKeyboardWillShow, object: nil)
         
-        if let storedMessage = dbAccessor.fetchAllMessages() {
-            controller = storedMessage
-            controller!.delegate = self
+        do {
+            try controller.performFetch()
             
-            DispatchQueue.main.async {
-                if self.controller!.sections!.count > 0 {
-                    let lastSection = self.controller!.sections!.count - 1
-                    let lastRow = self.controller!.sections![lastSection].numberOfObjects - 1
-                    let indexPath = IndexPath(item: lastRow, section: lastSection)
-                    self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: false)
+            if controller.sections!.count > 0 {
+                DispatchQueue.main.async {
+                    let lastSection = self.controller.sections!.count - 1
+                    let lastRow = self.controller.sections![lastSection].numberOfObjects - 1
+                    self.tableView.scrollToRow(at: IndexPath(item: lastRow, section: lastSection), at: .bottom, animated: false)
                 }
             }
+            
+        } catch {
+            
         }
         
-
-//        if let storedMessages = dbAccessor.fetchAllMessages() {
-//            message.append(contentsOf: storedMessages)
-//
-//            tableView.reloadData()
-//
-//            DispatchQueue.main.async {
-//                let indexPath = IndexPath(item: self.message.count - 1, section: 0)
-//                self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: false)
-//            }
-//
-////            if storedMessages.count > 15 {
-////                let start = storedMessages.count - 15 - 1
-////                let lastMessages = storedMessages[start..<storedMessages.count]
-////                message.append(contentsOf: lastMessages)
-////            }
-////
-////            tableView.reloadData()
-////
-////            DispatchQueue.main.async {
-////                let indexPath = IndexPath(item: self.message.count - 1, section: 0)
-////                self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: false)
-////            }
-////
-////            let limit = storedMessages.count - 15 - 1
-////            for i in (0..<limit).reversed() {
-////                let msg = storedMessages[i]
-////                message.insert(msg, at: 0)
-////
-////                let indexPath = IndexPath(item: 0, section: 0)
-////                tableView.insertRows(at: [indexPath], with: .automatic)
-////            }
-//        }
         imagePicker.delegate = self
     }
 
@@ -165,31 +143,11 @@ class ViewController: UIViewController {
             lblWidth = (singleRowWidth < 50) ? 50 : singleRowWidth
             lblHeight = singleRowMessageHeight
         }
-        
-        var indexPathList = [IndexPath]()
-        if checkForLastMessageOfTheDay() {
-            let headerIndexPath = IndexPath(item: message.count - 1, section: 0)
-            indexPathList.append(headerIndexPath)
-        }
-        
+    
         let dataModel = MessageDataModel(text: text, width: lblWidth, height: lblHeight, isSpacingRequired: isSpacingRequired, isOutgoing: isOutgoing)
         message.append(dataModel)
         msgTextView.text = ""
         isSpacingRequired = false
-        
-//        let messageIndexPath = IndexPath(item: message.count - 1, section: 0)
-//        indexPathList.append(messageIndexPath)
-//
-//        DispatchQueue.main.async {
-//            self.tableView.insertRows(at: indexPathList, with: .bottom)
-//            self.tableView.scrollToRow(at: messageIndexPath, at: .bottom, animated: true)
-//
-//            self.updateVisibleIndexesByOne()
-//        }
-        
-        if indexPathList.count == 2 {
-            updateLastHeaders(list: indexPathList)
-        }
         
         dbAccessor.saveMessage(messageDataModel: dataModel)
     }
@@ -210,20 +168,35 @@ class ViewController: UIViewController {
         self.present(alert, animated: true, completion: nil)
     }
     
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        switch type {
+        case .insert:
+            if let index = newIndexPath {
+                DispatchQueue.main.async {
+                    self.tableView.insertRows(at: [index], with: .bottom)
+                    self.tableView.scrollToRow(at: index, at: .bottom, animated: true)
+                    
+                    self.updateVisibleIndexesByOne()
+                }
+            }
+        default:
+            break
+        }
+    }
 }
 
 extension ViewController: UITableViewDataSource, UITableViewDelegate {
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return controller!.sections!.count
+        return controller.sections!.count
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return controller!.sections![section].numberOfObjects
+        return controller.sections![section].numberOfObjects
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        let msg = MessageDataModel(database: controller!.object(at: indexPath))
+        let msg = MessageDataModel(database: controller.object(at: indexPath))
         if msg.getMessageType() == .DateHeader {
             return 20
         } else {
@@ -240,7 +213,7 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
         let lbl = UILabel(frame: CGRect(x: 10, y: 0, width: 80, height: 20))
         lbl.numberOfLines = 0
         lbl.font = UIFont.systemFont(ofSize: 11, weight: UIFont.Weight.medium)
-        lbl.text = controller!.sections![section].name
+        lbl.text = controller.sections![section].name
         lbl.textColor = UIColor.darkGray
         lbl.textAlignment = .center
         
@@ -262,7 +235,7 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "messageTypeIdentifier") as! MessageTableViewCell
         
-        let msg = MessageDataModel(database: controller!.object(at: indexPath))
+        let msg = MessageDataModel(database: controller.object(at: indexPath))
         cell.lblFont = font
         cell.message = msg
         
@@ -272,38 +245,6 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: false)
         self.view.endEditing(true)
-    }
-    
-}
-
-extension ViewController {
-    
-    fileprivate func checkForLastMessageOfTheDay() -> Bool {
-        if let lastMessage = message.last, lastMessage.isLastMessageOfTheDay() {
-            let dataModel = MessageDataModel(isSpacingRequired: true)
-            message.append(dataModel)
-            
-            dbAccessor.saveMessage(messageDataModel: dataModel)
-            
-            return true
-        }
-        return false
-    }
-    
-    fileprivate func updateLastHeaders(list:[IndexPath]) {
-        if lastTwoHeaderIndexPath != nil  {
-            DispatchQueue.main.async {
-                for index in self.lastTwoHeaderIndexPath! {
-                    if let cell = self.tableView.cellForRow(at: index) as? MessageTableViewCell {
-                        cell.message = self.message[index.row]
-                    }
-                }
-                self.lastTwoHeaderIndexPath!.append(list[0])
-            }
-        } else {
-            lastTwoHeaderIndexPath = [IndexPath]()
-            lastTwoHeaderIndexPath!.append(list[0])
-        }
     }
     
 }
@@ -340,31 +281,12 @@ extension ViewController : UIImagePickerControllerDelegate, UINavigationControll
         if let pickedImage = info[UIImagePickerControllerOriginalImage] as? UIImage {
             let scaledImage = pickedImage.af_imageAspectScaled(toFill: CGSize(width: imageRowDimension, height: imageRowDimension))
             
-            var indexPathList = [IndexPath]()
-            if checkForLastMessageOfTheDay() {
-                let headerIndexPath = IndexPath(item: message.count - 1, section: 0)
-                indexPathList.append(headerIndexPath)
-            }
             
             let dataModel = MessageDataModel(image: scaledImage, dimension: imageRowDimension, isSpacingRequired: isSpacingRequired, isOutgoing: isOutgoing)
             message.append(dataModel)
             msgTextView.text = ""
             isSpacingRequired = false
-            
-            let messageIndexPath = IndexPath(item: message.count - 1, section: 0)
-            indexPathList.append(messageIndexPath)
-            
-            DispatchQueue.main.async {
-                self.tableView.insertRows(at: indexPathList, with: .bottom)
-                self.tableView.scrollToRow(at: messageIndexPath, at: .bottom, animated: true)
-                
-                self.updateVisibleIndexesByOne()
-            }
-            
-            if indexPathList.count == 2 {
-                updateLastHeaders(list: indexPathList)
-            }
-            
+          
             dbAccessor.saveMessage(messageDataModel: dataModel)
         }
         dismiss(animated:true, completion: nil)
@@ -420,32 +342,6 @@ extension String {
         label.sizeToFit()
         
         return label.frame.height
-    }
-    
-}
-
-extension ViewController: NSFetchedResultsControllerDelegate {
-    
-    private func controllerWillChangeContent(_ controller: NSFetchedResultsController<Message>) {
-        tableView.beginUpdates()
-    }
-    
-    private func controllerDidChangeContent(_ controller: NSFetchedResultsController<Message>) {
-        tableView.endUpdates()
-        
-//        updateView()
-    }
-    
-    private func controller(_ controller: NSFetchedResultsController<Message>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
-        switch (type) {
-        case .insert:
-            if let indexPath = newIndexPath {
-                tableView.insertRows(at: [indexPath], with: .fade)
-            }
-            break;
-        default:
-            print("...")
-        }
     }
     
 }

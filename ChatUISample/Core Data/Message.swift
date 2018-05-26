@@ -73,18 +73,6 @@ class Message: NSManagedObject {
 
 extension Message {
     
-    internal func isFirstMessageForTheDay() -> Bool {
-        if Calendar.current.compare(self.getDateTime(), to: Date(), toGranularity: .day) == .orderedAscending {
-            return true
-        } else {
-            return false
-        }
-    }
-    
-}
-
-extension Message {
-    
     @NSManaged fileprivate var text: String!
     @NSManaged fileprivate var width: NSNumber!
     @NSManaged fileprivate var height: NSNumber!
