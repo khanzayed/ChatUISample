@@ -100,10 +100,6 @@ class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
         lastVisibleIndexPath = self.tableView.indexPathsForVisibleRows?.last
     }
     
-    fileprivate func updateVisibleIndexesByOne() {
-        lastVisibleIndexPath = IndexPath(item: message.count - 1, section: 0)
-    }
-    
     @objc private func keyboardDidShow(notification:Notification) {
         if let keyboardFrame: NSValue = notification.userInfo?[UIKeyboardFrameEndUserInfoKey] as? NSValue {
             let keyboardRectangle = keyboardFrame.cgRectValue
@@ -249,7 +245,7 @@ class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
                     }
                     self.tableView.scrollToRow(at: index, at: .bottom, animated: true)
                     
-                    self.updateVisibleIndexesByOne()
+                    self.lastVisibleIndexPath = index
                 }
             }
         default:
@@ -333,7 +329,6 @@ extension ViewController : UIImagePickerControllerDelegate, UINavigationControll
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         if let pickedImage = info[UIImagePickerControllerOriginalImage] as? UIImage {
             let scaledImage = pickedImage.af_imageAspectScaled(toFill: CGSize(width: imageRowDimension, height: imageRowDimension))
-            
             
             let dataModel = MessageDataModel(image: scaledImage, dimension: imageRowDimension, isSpacingRequired: isSpacingRequired, isOutgoing: isOutgoing)
             message.append(dataModel)
