@@ -14,7 +14,7 @@ import CoreData
 class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
 
     @IBOutlet weak var tableView: UITableView!
-    @IBOutlet weak var msgTextView: UITextField!
+    @IBOutlet weak var msgTextView: MessageTextField!
     @IBOutlet weak var btnSend: UIButton!
     @IBOutlet weak var segmentControl: UISegmentedControl!
     @IBOutlet weak var textViewBottomConstraint: NSLayoutConstraint!
@@ -95,7 +95,7 @@ class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+
     fileprivate func updateVisibleIndexes() {
         lastVisibleIndexPath = self.tableView.indexPathsForVisibleRows?.last
     }
@@ -289,6 +289,18 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
         let msg = MessageDataModel(database: controller.object(at: indexPath))
         cell.lblFont = font
         cell.message = msg
+        
+        cell.changeNextResponderBlock = { [weak self] (messageCell) in
+            guard let strongSelf = self else {
+                return
+            }
+            
+            if strongSelf.msgTextView.isFirstResponder {
+                strongSelf.msgTextView.overrideNextResponder = messageCell
+            } else {
+                cell.becomeFirstResponder()
+            }
+        }
         
         return cell
     }

@@ -10,6 +10,9 @@ import UIKit
 
 class MessageTableViewCell: UITableViewCell {
 
+    typealias ChangeNextResponderBlock = (UITableViewCell) -> Void
+    var changeNextResponderBlock:ChangeNextResponderBlock?
+    
     @IBOutlet weak var lblMessage: UILabel!
     
     internal var lbl: UILabel?
@@ -39,6 +42,10 @@ class MessageTableViewCell: UITableViewCell {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
+    }
+    
+    deinit {
+        print("Cell De-init")
     }
     
     func setupTextViewCell() {
@@ -132,19 +139,19 @@ extension MessageTableViewCell {
     }
     
     @objc fileprivate func handleLongTap(sender: UILongPressGestureRecognizer) {
-        guard sender.state == .began, let senderView = textView else {
+        guard sender.state == .began, let senderView = textView, let block = self.changeNextResponderBlock else {
             return
         }
         
         // Make responsiveView the window's first responder
-        senderView.becomeFirstResponder()
+        block(self)
         
         // Set up the shared UIMenuController
         let saveMenuItem = UIMenuItem(title: "Copy", action: #selector(copyTapped))
         UIMenuController.shared.menuItems = [saveMenuItem]
         
         // Tell the menu controller the first responder's frame and its super view
-        UIMenuController.shared.setTargetRect(senderView.frame, in: self)
+        UIMenuController.shared.setTargetRect(lbl!.frame, in: senderView)
         
         // Animate the menu onto view
         UIMenuController.shared.setMenuVisible(true, animated: true)
@@ -152,6 +159,13 @@ extension MessageTableViewCell {
     
     @objc fileprivate func copyTapped() {
         
+    }
+    
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        if action == #selector(MessageTableViewCell.copyTapped) {
+            return true
+        }
+        return false
     }
     
 }

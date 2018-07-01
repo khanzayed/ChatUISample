@@ -75,7 +75,7 @@
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ikl-dL-sqx">
                                 <rect key="frame" x="0.0" y="623" width="375" height="44"/>
                                 <subviews>
-                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="oad-FI-Z4e">
+                                    <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="oad-FI-Z4e" customClass="MessageTextField" customModule="ChatUISample" customModuleProvider="target">
                                         <rect key="frame" x="33" y="6" width="284" height="30"/>
                                         <nil key="textColor"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="14"/>
@@ -168,7 +168,7 @@
                     </view>
                     <connections>
                         <outlet property="btnSend" destination="buW-e7-ySA" id="Q4o-zm-lCo"/>
-                        <outlet property="msgTextView" destination="oad-FI-Z4e" id="teM-Va-zua"/>
+                        <outlet property="msgTextView" destination="oad-FI-Z4e" id="Dsd-EH-hZh"/>
                         <outlet property="segmentControl" destination="u52-rT-Ni2" id="zl8-Sj-jIE"/>
                         <outlet property="tableView" destination="VcO-YJ-nFC" id="mfq-da-3eD"/>
                         <outlet property="textViewBottomConstraint" destination="prc-0i-Sqp" id="Qg4-mv-Mni"/>
