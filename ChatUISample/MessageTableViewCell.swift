@@ -16,6 +16,7 @@ class MessageTableViewCell: UITableViewCell {
     internal var textView: UIView?
     internal var dateLbl: UILabel?
     internal var imgView: UIImageView?
+    internal var longTap: UILongPressGestureRecognizer?
     
     internal var lblFont:UIFont!
     internal var message:MessageDataModel! {
@@ -46,6 +47,9 @@ class MessageTableViewCell: UITableViewCell {
         textView?.removeFromSuperview()
         imageView?.removeFromSuperview()
         
+        longTap?.removeTarget(self, action: #selector(self.handleLongTap(sender:)))
+        longTap = nil
+        
         lbl = nil
         dateLbl = nil
         textView = nil
@@ -75,6 +79,10 @@ class MessageTableViewCell: UITableViewCell {
         textView!.addSubview(lbl!)
         textView!.addSubview(dateLbl!)
         self.addSubview(textView!)
+        
+        longTap = UILongPressGestureRecognizer(target: self, action: #selector(handleLongTap(sender:)))
+        longTap!.minimumPressDuration = 1.0
+        textView!.addGestureRecognizer(longTap!)
     }
     
     func setupImageViewCell() {
@@ -113,6 +121,37 @@ class MessageTableViewCell: UITableViewCell {
         textView!.addSubview(imgView!)
         textView!.addSubview(dateLbl!)
         self.addSubview(textView!)
+    }
+    
+}
+
+extension MessageTableViewCell {
+    
+    override var canBecomeFirstResponder: Bool {
+        return true
+    }
+    
+    @objc fileprivate func handleLongTap(sender: UILongPressGestureRecognizer) {
+        guard sender.state == .began, let senderView = textView else {
+            return
+        }
+        
+        // Make responsiveView the window's first responder
+        senderView.becomeFirstResponder()
+        
+        // Set up the shared UIMenuController
+        let saveMenuItem = UIMenuItem(title: "Copy", action: #selector(copyTapped))
+        UIMenuController.shared.menuItems = [saveMenuItem]
+        
+        // Tell the menu controller the first responder's frame and its super view
+        UIMenuController.shared.setTargetRect(senderView.frame, in: self)
+        
+        // Animate the menu onto view
+        UIMenuController.shared.setMenuVisible(true, animated: true)
+    }
+    
+    @objc fileprivate func copyTapped() {
+        
     }
     
 }

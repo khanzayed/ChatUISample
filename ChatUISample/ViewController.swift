@@ -123,7 +123,9 @@ class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
             self.textViewBottomConstraint.constant = 0
             self.view.layoutIfNeeded()
         }) { (true) in
-            self.tableView.scrollToRow(at: self.lastVisibleIndexPath!, at: .bottom, animated: true)
+            if let index = self.lastVisibleIndexPath {
+                self.tableView.scrollToRow(at: index, at: .bottom, animated: true)
+            }
         }
     }
     
