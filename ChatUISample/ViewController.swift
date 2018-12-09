@@ -42,7 +42,7 @@ class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
         let managedObjectContext = appDelegate.persistentContainer.viewContext
         
         let fetchRequest = NSFetchRequest<Message>(entityName: "Message")
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "dateTime", ascending: true)]
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "dateTime", ascending: false)]
         
         
         let frc = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: managedObjectContext, sectionNameKeyPath: "headerDateStr", cacheName: nil)
@@ -64,21 +64,23 @@ class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
         viewBlankTableHeader.layer.borderColor = UIColor(rgba: "#CFCFCF").cgColor
         viewBlankTableHeader.layer.borderWidth = 0.5
         
+        tableView.transform = CGAffineTransform(rotationAngle: -(CGFloat)(Double.pi));
+        
         do {
             try controller.performFetch()
             
-            if controller.sections!.count > 0 {
-                viewBlankTableHeader.isHidden = true
-                DispatchQueue.main.async {
-                    let lastSection = self.controller.sections!.count - 1
-                    let lastRow = self.controller.sections![lastSection].numberOfObjects - 1
-                    if lastRow >= 0 {
-                        self.tableView.scrollToRow(at: IndexPath(item: lastRow, section: lastSection), at: .bottom, animated: false)
-                    }
-                }
-            } else {
-                viewBlankTableHeader.isHidden = false
-            }
+//            if controller.sections!.count > 0 {
+//                viewBlankTableHeader.isHidden = true
+//                DispatchQueue.main.async {
+//                    let lastSection = self.controller.sections!.count - 1
+//                    let lastRow = self.controller.sections![lastSection].numberOfObjects - 1
+//                    if lastRow >= 0 {
+//                        self.tableView.scrollToRow(at: IndexPath(item: lastRow, section: lastSection), at: .bottom, animated: false)
+//                    }
+//                }
+//            } else {
+//                viewBlankTableHeader.isHidden = false
+//            }
         } catch {
             
         }
@@ -111,9 +113,9 @@ class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
                 self.textViewBottomConstraint.constant = -keyboardHeight
                 self.view.layoutIfNeeded()
             }) { (true) in
-                if let indexPath = self.lastVisibleIndexPath {
-                    self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
-                }
+//                if let indexPath = self.lastVisibleIndexPath {
+//                    self.tableView.scrollToRow(at: indexPath, at: .bottom, animated: true)
+//                }
             }
         }
     }
@@ -123,9 +125,9 @@ class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
             self.textViewBottomConstraint.constant = 0
             self.view.layoutIfNeeded()
         }) { (true) in
-            if let index = self.lastVisibleIndexPath {
-                self.tableView.scrollToRow(at: index, at: .bottom, animated: true)
-            }
+//            if let index = self.lastVisibleIndexPath {
+//                self.tableView.scrollToRow(at: index, at: .bottom, animated: true)
+//            }
         }
     }
     
@@ -165,6 +167,8 @@ class ViewController: UIViewController, NSFetchedResultsControllerDelegate {
         textView.layer.borderColor = UIColor(rgba: "#CFCFCF").cgColor
         
         textView.addSubview(lbl)
+        
+        textView.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi));
         
         headerView.addSubview(textView)
     }
@@ -271,12 +275,23 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
         let value:CGFloat = (msg.getIsSpacingRequired()) ? 34 : 29
         return msg.getCGFloatHeight() + value
     }
+//
+//    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+//        return 20
+//    }
+//
+//    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+//        let headerView = UIView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 20))
+//        configureHeaderView(headerView: headerView, section: section)
+//
+//        return headerView
+//    }
+//
+//    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+//        return 20
+//    }
     
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 20
-    }
-    
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
         let headerView = UIView(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 20))
         configureHeaderView(headerView: headerView, section: section)
         
@@ -285,6 +300,8 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "messageTypeIdentifier") as! MessageTableViewCell
+        
+        cell.transform = CGAffineTransform(rotationAngle: CGFloat(Double.pi));
         
         let msg = MessageDataModel(database: controller.object(at: indexPath))
         cell.lblFont = font
